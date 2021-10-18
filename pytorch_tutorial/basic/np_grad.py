@@ -13,6 +13,17 @@ b = np.random.randn()
 c = np.random.randn()
 d = np.random.randn()
 
+# tensor version
+'''
+dtype = torch.float
+device = torch.device("cpu")
+
+x = torch.linspace(-math.pi, math.pi, 2000, device=device, dtype=dtype)
+y = torch.sin(x)
+
+a = torch.randn((), device=device, dtype=dtype)
+'''
+
 learning_rate = 1e-6
 
 for t in range(10000):
