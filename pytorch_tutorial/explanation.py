@@ -29,3 +29,7 @@
 从给定的一系列transforms中选一个进行操作 transforms.RandomApply(transforms, p=0.5)，
 给一个transform加上概率，依概率进行操作 transforms.RandomOrder，将transforms中的操作随机打乱
 '''
+
+'''
+使用Google colab免费使用GPU运行
+'''
