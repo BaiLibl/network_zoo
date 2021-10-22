@@ -13,13 +13,13 @@ import matplotlib.pyplot as plt
 采样越高，声音的还原就越真实越自然，人对频率的识别范围是 20HZ - 20000HZ, 如果每秒钟能对声音做 20000 个采样, 回放时就足可以满足人耳的需求. 
 所以 22050 的采样频率是常用的, 44100已是CD音质, 超过48000的采样对人耳已经没有意义。
 '''
-url = "https://pytorch.org/tutorials/_static/img/steam-train-whistle-daniel_simon-converted-from-mp3.wav"
-r = requests.get(url)
+# url = "https://pytorch.org/tutorials/_static/img/steam-train-whistle-daniel_simon-converted-from-mp3.wav"
+# r = requests.get(url)
 
-with open('steam-train-whistle-daniel_simon-converted-from-mp3.wav', 'wb') as f:
-    f.write(r.content)
+# with open('./data/steam-train-whistle-daniel_simon-converted-from-mp3.wav', 'wb') as f:
+#     f.write(r.content)
 
-filename = "steam-train-whistle-daniel_simon-converted-from-mp3.wav"
+filename = "./data/steam-train-whistle-daniel_simon-converted-from-mp3.wav"
 waveform, sample_rate = torchaudio.load(filename) # waveform 音频大小 sample_rate 采样率
 
 print("Shape of waveform: {}".format(waveform.size()))

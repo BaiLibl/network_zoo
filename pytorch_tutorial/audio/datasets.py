@@ -7,6 +7,7 @@ import torchaudio
 import matplotlib.pyplot as plt
 import IPython.display as ipd
 from tqdm.notebook import tqdm
+import sys
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(device)
@@ -35,37 +36,36 @@ class SubsetSC(SPEECHCOMMANDS):
 # Create training and testing split of the data. We do not use validation in this tutorial.
 train_set = SubsetSC("training")
 test_set = SubsetSC("testing")
-
-waveform, sample_rate, label, speaker_id, utterance_number = train_set[0] # SPEECHCOMMANDS数据集中的数据点是由波形（音频信号），采样率，发声（标签），讲话者的 ID，发声数组成的元组
-print("Shape of waveform: {}".format(waveform.size()))
-print("Sample rate of waveform: {}".format(sample_rate))
-
-plt.plot(waveform.t().numpy())
+# print('train size: %d, test size: %d' % (len(train_set), len(test_set)))
+waveform, sample_rate, label, speaker_id, utterance_number = train_set[0] 
+# # SPEECHCOMMANDS数据集中的数据点是由波形（音频信号），采样率，发声（标签），讲话者的 ID，发声数组成的元组
+# print("Shape of waveform: {}".format(waveform.size()))
+# print("Sample rate of waveform: {}".format(sample_rate))
+# print("label of waveform: {}".format(label))
+# print("speaker_id of waveform: {}".format(speaker_id))
+# print("utterance_number of waveform: {}".format(utterance_number))
 labels = sorted(list(set(datapoint[2] for datapoint in train_set)))
-print(labels)
-
+# print(labels)
 new_sample_rate = 8000
 transform = torchaudio.transforms.Resample(orig_freq=sample_rate, new_freq=new_sample_rate)
 transformed = transform(waveform)
-
 ipd.Audio(transformed.numpy(), rate=new_sample_rate)
+
 def label_to_index(word):
     return torch.tensor(labels.index(word))
 
 def index_to_label(index):
     return labels[index]
 
-word_start = "yes"
-index = label_to_index(word_start)
-word_recovered = index_to_label(index)
+# word_start = "yes"
+# index = label_to_index(word_start)
+# word_recovered = index_to_label(index)
+# print(word_start, "-->", index, "-->", word_recovered)
 
-print(word_start, "-->", index, "-->", word_recovered)
-
-# 
 def pad_sequence(batch):
     # Make all tensor in a batch the same length by padding with zeros
     batch = [item.t() for item in batch]
-    batch = torch.nn.utils.rnn.pad_sequence(batch, batch_first=True, padding_value=0.)
+    batch = torch.nn.utils.rnn.pad_sequence(batch, batch_first=True, padding_value=0.) #填充padding_value
     return batch.permute(0, 2, 1)
 
 def collate_fn(batch):

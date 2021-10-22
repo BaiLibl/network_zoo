@@ -4,35 +4,43 @@ from datasets import *
 class M5(nn.Module):
     def __init__(self, n_input=1, n_output=35, stride=16, n_channel=32):
         super().__init__()
-        self.conv1 = nn.Conv1d(n_input, n_channel, kernel_size=80, stride=stride)
+        self.conv1 = nn.Conv1d(n_input, n_channel, kernel_size=80, stride=stride) #第一层的kernal_size竟然设置这么大
         self.bn1 = nn.BatchNorm1d(n_channel)
         self.pool1 = nn.MaxPool1d(4)
+
         self.conv2 = nn.Conv1d(n_channel, n_channel, kernel_size=3)
         self.bn2 = nn.BatchNorm1d(n_channel)
         self.pool2 = nn.MaxPool1d(4)
+
         self.conv3 = nn.Conv1d(n_channel, 2 * n_channel, kernel_size=3)
         self.bn3 = nn.BatchNorm1d(2 * n_channel)
         self.pool3 = nn.MaxPool1d(4)
+
         self.conv4 = nn.Conv1d(2 * n_channel, 2 * n_channel, kernel_size=3)
         self.bn4 = nn.BatchNorm1d(2 * n_channel)
         self.pool4 = nn.MaxPool1d(4)
+
         self.fc1 = nn.Linear(2 * n_channel, n_output)
 
     def forward(self, x):
         x = self.conv1(x)
         x = F.relu(self.bn1(x))
         x = self.pool1(x)
+
         x = self.conv2(x)
         x = F.relu(self.bn2(x))
-        x = self.pool2(x)
+        x = self.pool2(x) # 对激活值的pooling操作
+
         x = self.conv3(x)
         x = F.relu(self.bn3(x))
         x = self.pool3(x)
+
         x = self.conv4(x)
         x = F.relu(self.bn4(x))
         x = self.pool4(x)
-        x = F.avg_pool1d(x, x.shape[-1])
-        x = x.permute(0, 2, 1)
+
+        x = F.avg_pool1d(x, x.shape[-1]) #所有列求平均
+        x = x.permute(0, 2, 1) # tensor维度改变
         x = self.fc1(x)
         return F.log_softmax(x, dim=2)
 
@@ -64,3 +72,61 @@ def adjust_learning_rate(optimizer, epoch):
 def train(epoch):
     adjust_learning_rate(optimizer, epoch)
 '''
+
+def train(model, epoch, log_interval):
+    model.train()
+    for batch_idx, (data, target) in enumerate(train_loader):
+        data = data.to(device)
+        target = target.to(device)
+
+        data = transform(data) # Resanmple
+        output = model(data)
+
+        # negative log-likelihood for a tensor of size (batch x 1 x n_output)
+        loss = F.nll_loss(output.squeeze(), target)
+
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+        if batch_idx % log_interval == 0:
+            print("Train epoch:%d, loss:%f" % (epoch, loss.item()))
+
+
+def test(model, epoch):
+    model.eval()
+    correct = 0
+    for data, target in test_loader:
+        data = data.to(device)
+        target = target.to(device)
+        data = transform(data)
+        output = model(data)
+
+        pred = output.argmax(dim=-1)
+        correct += pred.squeeze().eq(target).sum().item()
+    print(f"\nTest Epoch: {epoch}\tAccuracy: {correct}/{len(test_loader.dataset)}\n")
+
+log_interval = 20
+n_epoch = 2
+# The transform needs to live on the same device as the model and the data.
+transform = transform.to(device)
+with tqdm(total=n_epoch) as pbar:
+    for epoch in range(1, n_epoch + 1):
+        train(model, epoch, log_interval)
+        test(model, epoch)
+        scheduler.step()
+
+
+def predict(tensor):
+    # Use the model to predict the label of the waveform
+    tensor = tensor.to(device)
+    tensor = transform(tensor)
+    tensor = model(tensor.unsqueeze(0))
+    tensor = tensor.argmax(dim=-1)
+    tensor = index_to_label(tensor.squeeze())
+    return tensor
+
+waveform, sample_rate, utterance, *_ = train_set[-1]
+# ipd.Audio(waveform.numpy(), rate=sample_rate)
+print(f"Expected: {utterance}. Predicted: {predict(waveform)}.")
+
