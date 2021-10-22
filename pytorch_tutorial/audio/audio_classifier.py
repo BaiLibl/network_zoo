@@ -110,11 +110,11 @@ log_interval = 20
 n_epoch = 2
 # The transform needs to live on the same device as the model and the data.
 transform = transform.to(device)
-with tqdm(total=n_epoch) as pbar:
-    for epoch in range(1, n_epoch + 1):
-        train(model, epoch, log_interval)
-        test(model, epoch)
-        scheduler.step()
+for epoch in range(1, n_epoch + 1):
+    print("Epoch %d starts ......" % (epoch))
+    train(model, epoch, log_interval)
+    test(model, epoch)
+    scheduler.step()
 
 
 def predict(tensor):
