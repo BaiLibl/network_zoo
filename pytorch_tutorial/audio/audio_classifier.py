@@ -114,7 +114,7 @@ for epoch in range(1, n_epoch + 1):
     print("Epoch %d starts ......" % (epoch))
     train(model, epoch, log_interval)
     test(model, epoch)
-    scheduler.step()
+    scheduler.step() # 调整lr
 
 
 def predict(tensor):
@@ -126,7 +126,6 @@ def predict(tensor):
     tensor = index_to_label(tensor.squeeze())
     return tensor
 
-waveform, sample_rate, utterance, *_ = train_set[-1]
+waveform, sample_rate, utterance, *_ = train_set[-1] # utterance 发音
 # ipd.Audio(waveform.numpy(), rate=sample_rate)
 print(f"Expected: {utterance}. Predicted: {predict(waveform)}.")
-

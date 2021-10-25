@@ -9,6 +9,7 @@ import torch.optim as optim
 from torchvision import datasets, transforms
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
 
 epsilons = [0, .05, .1, .15, .2, .25, .3] # [0-1] 
 pretrained_model = "./premodel/lenet_mnist_model.pth"
